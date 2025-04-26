@@ -50,6 +50,38 @@ header h1 {
     font-size: 12px;
 }
 
+/* Avatar animations */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.avatar-image.talking {
+    animation: pulse 1s infinite;
+}
+
+.avatar-image.listening {
+    animation: bounce 1.5s infinite;
+}
+
+/* Voice control button */
+#voice-indicator {
+    transition: all 0.3s ease;
+}
+
+#voice-indicator.listening {
+    background-color: #dc3545;
+    color: white;
+    border-color: #dc3545;
+    animation: pulse 1s infinite;
+}
+
 #step-title {
     border-bottom: 2px solid #3498db;
     padding-bottom: 10px;

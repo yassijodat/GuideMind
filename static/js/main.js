@@ -4,9 +4,49 @@ $(document).ready(function() {
     let currentStep = 0;
     let currentAudio = null;
     let lastExplanation = '';
+    let isListening = false;
+    let recognition = null;
 
     // Initialize speech synthesis
     const synth = window.speechSynthesis;
+    
+    // Initialize speech recognition if available
+    if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'en-US';
+        
+        // Handle recognition results
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript.toLowerCase();
+            console.log('Voice input:', transcript);
+            
+            // Check for keywords
+            if (transcript.includes('stuck') || transcript.includes('help') || 
+                transcript.includes('don\'t understand') || transcript.includes('confused')) {
+                $('#help-button').click();
+            } else if (transcript.includes('next') || transcript.includes('continue')) {
+                $('#next-step').click();
+            } else if (transcript.includes('back') || transcript.includes('previous')) {
+                $('#prev-step').click();
+            } else if (transcript.includes('repeat') || transcript.includes('again')) {
+                $('#replay-audio').click();
+            }
+        };
+        
+        recognition.onend = function() {
+            isListening = false;
+            $('#voice-indicator').removeClass('listening').text('Voice Control');
+        };
+        
+        recognition.onerror = function(event) {
+            console.error('Speech recognition error', event.error);
+            isListening = false;
+            $('#voice-indicator').removeClass('listening').text('Voice Control');
+        };
+    }
     
     // Handle upload form submission
     $('#upload-form').on('submit', function(e) {
@@ -217,6 +257,28 @@ $(document).ready(function() {
         currentStep = 0;
     });
     
+    // Add voice control button functionality
+    $('#voice-indicator').on('click', function() {
+        if (!recognition) {
+            alert('Speech recognition is not supported in your browser. Please try Chrome.');
+            return;
+        }
+        
+        if (!isListening) {
+            // Start listening
+            recognition.start();
+            isListening = true;
+            $(this).addClass('listening').html('<i class="fas fa-microphone"></i> Listening...');
+            $('#avatar-img').addClass('listening');
+        } else {
+            // Stop listening
+            recognition.stop();
+            isListening = false;
+            $(this).removeClass('listening').html('<i class="fas fa-microphone"></i> Voice Control');
+            $('#avatar-img').removeClass('listening');
+        }
+    });
+    
     // Text-to-speech function
     function speakText(text) {
         // Stop any current speech
@@ -249,17 +311,20 @@ $(document).ready(function() {
             utterance.voice = preferredVoice;
         }
         
-        // Show speaking indicator
+        // Show speaking indicator and animate avatar
         $('.speaking-indicator').removeClass('d-none');
+        $('#avatar-img').addClass('talking');
         
         // Event handlers
         utterance.onend = function() {
             $('.speaking-indicator').addClass('d-none');
+            $('#avatar-img').removeClass('talking');
             currentAudio = null;
         };
         
         utterance.onerror = function() {
             $('.speaking-indicator').addClass('d-none');
+            $('#avatar-img').removeClass('talking');
             currentAudio = null;
             console.error('Speech synthesis error');
         };

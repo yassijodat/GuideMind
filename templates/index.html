@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GuideMind - Origami Assistant</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -48,10 +49,15 @@
             <div class="row">
                 <div class="col-md-6">
                     <div id="avatar-container" class="text-center mb-3">
-                        <!-- Avatar will be shown here -->
+                        <!-- Avatar with animation -->
                         <div class="avatar-placeholder">
-                            <img src="https://www.svgrepo.com/show/384676/account-avatar-profile-user.svg" alt="Guide Avatar" class="avatar-image">
+                            <img src="https://i.imgur.com/BnWxjbv.png" alt="Guide Avatar" class="avatar-image" id="avatar-img">
                             <div class="speaking-indicator d-none">Speaking...</div>
+                        </div>
+                        <div class="voice-control mt-2">
+                            <button id="voice-indicator" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-microphone"></i> Voice Control
+                            </button>
                         </div>
                     </div>
                     <div id="step-progress" class="progress mb-3" style="height: 30px;">
