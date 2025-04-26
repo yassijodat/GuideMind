@@ -88,6 +88,51 @@ $(document).ready(function() {
             }
         });
     });
+
+    // Handle Easy Dragon selection
+    $('#preloaded-dragon').on('click', function() {
+        $.ajax({
+            url: '/load-instructions',
+            type: 'POST',
+            data: {
+                preloaded_key: 'easy_dragon'
+            },
+            success: handleInstructionsLoaded,
+            error: function() {
+                alert('Error loading instructions. Please try again.');
+            }
+        });
+    });
+
+    // Handle Jumping Frog selection
+    $('#preloaded-frog').on('click', function() {
+        $.ajax({
+            url: '/load-instructions',
+            type: 'POST',
+            data: {
+                preloaded_key: 'jumping_frog'
+            },
+            success: handleInstructionsLoaded,
+            error: function() {
+                alert('Error loading instructions. Please try again.');
+            }
+        });
+    });
+
+    // Handle Lotus Flower selection
+    $('#preloaded-lotus').on('click', function() {
+        $.ajax({
+            url: '/load-instructions',
+            type: 'POST',
+            data: {
+                preloaded_key: 'lotus_flower'
+            },
+            success: handleInstructionsLoaded,
+            error: function() {
+                alert('Error loading instructions. Please try again.');
+            }
+        });
+    });
     
     // Handle instructions loaded
     async function handleInstructionsLoaded(data) {
@@ -169,6 +214,9 @@ $(document).ready(function() {
                     $('#step-instruction').text(data.instruction);
                     $('#step-explanation').html(data.explanation);
                     
+                    // Update step image
+                    updateStepImage(data.origami_type, data.step_number);
+                    
                     // Update progress bar
                     const progress = (data.step_number / data.total_steps) * 100;
                     $('.progress-bar').css('width', progress + '%');
@@ -235,9 +283,9 @@ $(document).ready(function() {
                     }
                     
                     if (currentStep === totalSteps - 1) {
-                        $('#next-step').text('Finish');
+                        $('#next-step').html('Finish<i class="fas fa-check ms-2"></i>');
                     } else {
-                        $('#next-step').text('Next Step');
+                        $('#next-step').html('Next Step<i class="fas fa-arrow-right ms-2"></i>');
                     }
                 } else {
                     alert('Error: ' + data.error);
@@ -579,6 +627,44 @@ $(document).ready(function() {
         
         // Speak congratulations
         speakText("Congratulations! You've completed all the steps!");
+    }
+    
+    // Function to update step image based on origami type and step number
+    function updateStepImage(origamiType, stepNumber) {
+        // Map preloaded_key to directory name
+        const typeMap = {
+            'basic_crane': 'crane',
+            'easy_dragon': 'dragon',
+            'jumping_frog': 'frog',
+            'lotus_flower': 'lotus'
+        };
+        
+        const imageDir = typeMap[origamiType] || 'crane'; // Default to crane if type not found
+        const imagePath = `/static/img/${imageDir}/${stepNumber}.jpg`;
+        
+        // Check if the image exists
+        $.get(imagePath)
+            .done(function() {
+                // Image exists, show it
+                $('#step-image').attr('src', imagePath).show();
+                $('#step-image-container').show();
+            })
+            .fail(function() {
+                // Image doesn't exist, use placeholder
+                const placeholderPath = `/static/img/${imageDir}/placeholder.jpg`;
+                
+                // Try with placeholder
+                $.get(placeholderPath)
+                    .done(function() {
+                        $('#step-image').attr('src', placeholderPath).show();
+                        $('#step-image-container').show();
+                    })
+                    .fail(function() {
+                        // No suitable image found, hide the container
+                        $('#step-image').hide();
+                        $('#step-image-container').hide();
+                    });
+            });
     }
     
     // Handle voices loading (Chrome needs this)
