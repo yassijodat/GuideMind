@@ -35,7 +35,7 @@ def ask_executor(step):
         max_tokens=300,
         temperature=0,
         messages=[
-            {"role": "user", "content": f"You are an execution expert. Explain exactly how to perform this step:\n\nStep: {step}"}
+            {"role": "user", "content": f"You are a code execution expert. Explain exactly how to perform this step:\n\nStep: {step}"}
         ]
     )
     execution = response.content[0].text

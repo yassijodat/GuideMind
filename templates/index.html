@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuideMind - Origami Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header class="text-center my-4">
+            <h1>GuideMind</h1>
+            <p class="lead">Your AI Guide for Origami</p>
+        </header>
+
+        <div id="setup-container" class="card p-4 mb-4">
+            <h2>Get Started</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Upload Instructions</h5>
+                            <form id="upload-form">
+                                <div class="mb-3">
+                                    <input type="file" class="form-control" id="manual-upload" accept=".txt,.pdf,.doc,.docx">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Upload & Start</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Use Preloaded Instructions</h5>
+                            <div class="d-grid gap-2">
+                                <button id="preloaded-crane" class="btn btn-success">Basic Origami Crane</button>
+                                <!-- Additional preloaded options can be added here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="guide-container" class="card p-4 mb-4" style="display: none;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div id="avatar-container" class="text-center mb-3">
+                        <!-- Avatar will be shown here -->
+                        <div class="avatar-placeholder">
+                            <img src="https://www.svgrepo.com/show/384676/account-avatar-profile-user.svg" alt="Guide Avatar" class="avatar-image">
+                            <div class="speaking-indicator d-none">Speaking...</div>
+                        </div>
+                    </div>
+                    <div id="step-progress" class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">Step 0/0</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div id="instruction-container" class="mb-4">
+                        <h3 id="step-title">Step 1</h3>
+                        <p id="step-instruction" class="lead"></p>
+                        <div id="step-explanation"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-3">
+                <button id="prev-step" class="btn btn-secondary">Previous Step</button>
+                <div>
+                    <button id="help-button" class="btn btn-warning">I'm Stuck</button>
+                    <button id="replay-audio" class="btn btn-info">Replay Voice</button>
+                </div>
+                <button id="next-step" class="btn btn-primary">Next Step</button>
+            </div>
+
+            <div id="troubleshooting-container" class="mt-4 card bg-light" style="display: none;">
+                <div class="card-header">
+                    <h4>Troubleshooting</h4>
+                </div>
+                <div class="card-body">
+                    <div id="troubleshooting-content"></div>
+                </div>
+                <div class="card-footer">
+                    <button id="close-troubleshooting" class="btn btn-sm btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="completion-container" class="card p-4 text-center" style="display: none;">
+            <h2>Congratulations!</h2>
+            <p class="lead">You've completed all the steps!</p>
+            <div class="mt-3">
+                <button id="restart-button" class="btn btn-primary">Start Again</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
