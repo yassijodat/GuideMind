@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GuideMind - Interactive Origami Guide</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        .instruction-area {
+            margin-bottom: 30px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .help-btn {
+            background: #e74c3c;
+        }
+        .help-btn:hover {
+            background: #c0392b;
+        }
+        .troubleshoot-panel {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fdf8e3;
+            border-radius: 5px;
+            border-left: 4px solid #f39c12;
+        }
+        .image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-top: 10px;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GuideMind - Origami Guide</h1>
+        
+        <div class="instruction-area">
+            <h2>Current Step: <span id="current-step">Fold the paper in half diagonally</span></h2>
+            <p id="instruction-detail">Take the square paper and fold it diagonally to create a triangle. Make sure the corners align perfectly.</p>
+        </div>
+        
+        <div class="navigation">
+            <button id="prev-btn">Previous</button>
+            <button id="help-btn" class="help-btn">I'm Stuck</button>
+            <button id="next-btn">Next</button>
+        </div>
+        
+        <div id="troubleshoot-panel" class="troubleshoot-panel">
+            <h3>Tell us what's wrong</h3>
+            <form id="troubleshoot-form">
+                <div>
+                    <label for="description">Describe where you're stuck:</label>
+                    <textarea id="description" rows="3" style="width: 100%; margin-top: 5px;"></textarea>
+                </div>
+                <div style="margin-top: 10px;">
+                    <label for="user-image">Upload a photo of your current progress:</label>
+                    <input type="file" id="user-image" accept="image/*" style="margin-top: 5px;">
+                    <img id="image-preview" class="image-preview">
+                </div>
+                <button type="submit" style="margin-top: 15px;">Get Help</button>
+            </form>
+            <div id="loading" class="loading">
+                <p>Analyzing your image...</p>
+            </div>
+            <div id="advice-container" style="margin-top: 15px; display: none;">
+                <h3>Troubleshooting Advice:</h3>
+                <div id="advice-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('help-btn').addEventListener('click', function() {
+            document.getElementById('troubleshoot-panel').style.display = 'block';
+        });
+        
+        // Show image preview when user selects an image
+        document.getElementById('user-image').addEventListener('change', function(event) {
+            const imagePreview = document.getElementById('image-preview');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.style.display = 'none';
+            }
+        });
+        
+        // Handle form submission
+        document.getElementById('troubleshoot-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const description = document.getElementById('description').value;
+            const userImage = document.getElementById('user-image').files[0];
+            const currentStep = document.getElementById('current-step').textContent;
+            
+            if (!userImage) {
+                alert('Please upload an image of your current progress');
+                return;
+            }
+            
+            // Show loading indicator
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('advice-container').style.display = 'none';
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('userImage', userImage);
+            formData.append('description', description);
+            formData.append('currentStep', currentStep);
+            
+            // Send to server
+            fetch('/troubleshoot', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading indicator
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.error) {
+                    alert(data.error);
+                    return;
+                }
+                
+                // Display advice
+                document.getElementById('advice-container').style.display = 'block';
+                document.getElementById('advice-content').textContent = data.advice;
+            })
+            .catch(error => {
+                document.getElementById('loading').style.display = 'none';
+                alert('Error: ' + error.message);
+            });
+        });
+    </script>
+</body>
+</html>

@@ -90,7 +90,7 @@ $(document).ready(function() {
     });
     
     // Handle instructions loaded
-    function handleInstructionsLoaded(data) {
+    async function handleInstructionsLoaded(data) {
         if (data.success) {
             totalSteps = data.total_steps;
             currentStep = 0;
@@ -99,8 +99,54 @@ $(document).ready(function() {
             $('#setup-container').hide();
             $('#guide-container').show();
             
-            // Load first step
-            loadStep(0);
+            // Try to show welcome video with HeyGen if available
+            let showingWelcome = false;
+            
+            if (typeof heygenManager !== 'undefined' && await heygenManager.initialize()) {
+                try {
+                    // Show loading indicator
+                    $('.speaking-indicator').removeClass('d-none').text('Generating welcome...');
+                    
+                    // Get welcome video
+                    const welcomeVideoUrl = await heygenManager.getWelcomeVideo();
+                    
+                    if (welcomeVideoUrl) {
+                        // Update the video source
+                        const videoElement = document.getElementById('avatar-video');
+                        if (videoElement) {
+                            // Set onended event to load the first step when welcome is done
+                            videoElement.onended = function() {
+                                $('.speaking-indicator').addClass('d-none');
+                                
+                                // Now load the first step
+                                loadStep(0);
+                            };
+                            
+                            // Set video source and play
+                            videoElement.src = welcomeVideoUrl;
+                            videoElement.load();
+                            videoElement.play().catch(e => {
+                                console.error('Error playing welcome video:', e);
+                                
+                                // Fallback to loading first step directly
+                                loadStep(0);
+                            });
+                            
+                            showingWelcome = true;
+                            
+                            // Show the speaking indicator
+                            $('.speaking-indicator').text('Speaking...').removeClass('d-none');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error showing welcome video:', error);
+                }
+            }
+            
+            // If not showing welcome video, load first step directly
+            if (!showingWelcome) {
+                loadStep(0);
+            }
         } else {
             alert('Error: ' + data.error);
         }
@@ -114,7 +160,7 @@ $(document).ready(function() {
             data: {
                 step: stepNumber
             },
-            success: function(data) {
+            success: async function(data) {
                 if (data.success) {
                     currentStep = stepNumber;
                     
@@ -129,8 +175,53 @@ $(document).ready(function() {
                     $('.progress-bar').attr('aria-valuenow', progress);
                     $('.progress-bar').text(`Step ${data.step_number}/${data.total_steps}`);
                     
-                    // Auto-speak the explanation
-                    speakText(data.explanation);
+                    // Try to use HeyGen if available
+                    let usingHeyGen = false;
+                    
+                    if (typeof heygenManager !== 'undefined' && await heygenManager.initialize()) {
+                        try {
+                            // Show loading indicator
+                            $('.speaking-indicator').removeClass('d-none').text('Generating avatar...');
+                            
+                            // Get video for this step
+                            const videoUrl = await heygenManager.getStepVideo(stepNumber);
+                            
+                            if (videoUrl) {
+                                // Update the video source
+                                const videoElement = document.getElementById('avatar-video');
+                                if (videoElement) {
+                                    // Set onended event to hide speaking indicator
+                                    videoElement.onended = function() {
+                                        $('.speaking-indicator').addClass('d-none');
+                                    };
+                                    
+                                    // Set video source and play
+                                    videoElement.src = videoUrl;
+                                    videoElement.load();
+                                    videoElement.play().catch(e => {
+                                        console.error('Error playing HeyGen video:', e);
+                                        
+                                        // Fallback to regular speech
+                                        speakText(data.explanation);
+                                    });
+                                    
+                                    // Mark as using HeyGen
+                                    usingHeyGen = true;
+                                    
+                                    // Show the speaking indicator
+                                    $('.speaking-indicator').text('Speaking...').removeClass('d-none');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error using HeyGen for step explanation:', error);
+                        }
+                    }
+                    
+                    // If not using HeyGen, use regular speech synthesis
+                    if (!usingHeyGen) {
+                        speakText(data.explanation);
+                    }
+                    
                     lastExplanation = data.explanation;
                     
                     // Hide troubleshooting if visible
@@ -211,13 +302,60 @@ $(document).ready(function() {
         $.ajax({
             url: '/troubleshoot',
             type: 'GET',
-            success: function(data) {
+            success: async function(data) {
                 if (data.success) {
                     $('#troubleshooting-content').html(data.troubleshooting);
                     $('#troubleshooting-container').show();
                     
-                    // Speak troubleshooting advice
-                    speakText(data.troubleshooting);
+                    // Try to use HeyGen if available
+                    let usingHeyGen = false;
+                    
+                    if (typeof heygenManager !== 'undefined' && await heygenManager.initialize()) {
+                        try {
+                            // Show loading indicator
+                            $('.speaking-indicator').removeClass('d-none').text('Generating help...');
+                            
+                            // Get current step
+                            const currentStepText = $('#step-instruction').text();
+                            
+                            // Get help video
+                            const videoUrl = await heygenManager.getHelpVideo(currentStepText);
+                            
+                            if (videoUrl) {
+                                // Update the video source
+                                const videoElement = document.getElementById('avatar-video');
+                                if (videoElement) {
+                                    // Set onended event to hide speaking indicator
+                                    videoElement.onended = function() {
+                                        $('.speaking-indicator').addClass('d-none');
+                                    };
+                                    
+                                    // Set video source and play
+                                    videoElement.src = videoUrl;
+                                    videoElement.load();
+                                    videoElement.play().catch(e => {
+                                        console.error('Error playing HeyGen video:', e);
+                                        
+                                        // Fallback to regular speech
+                                        speakText(data.troubleshooting);
+                                    });
+                                    
+                                    // Mark as using HeyGen
+                                    usingHeyGen = true;
+                                    
+                                    // Show the speaking indicator
+                                    $('.speaking-indicator').text('Speaking...').removeClass('d-none');
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error using HeyGen for troubleshooting:', error);
+                        }
+                    }
+                    
+                    // If not using HeyGen, use regular speech synthesis
+                    if (!usingHeyGen) {
+                        speakText(data.troubleshooting);
+                    }
                 } else {
                     alert('Error: ' + data.error);
                 }
