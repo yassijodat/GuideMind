@@ -19,6 +19,32 @@ GuideMind is an AI-powered interactive instruction manual for origami, featuring
 
 ## Installation
 
+### Quick Demo Version (No API Key Required)
+
+For hackathon demos or quick testing:
+
+1. Clone the repository:
+```
+git clone https://github.com/yourusername/GuideMind.git
+cd GuideMind
+```
+
+2. Install Flask:
+```
+pip install flask
+```
+
+3. Run the demo version:
+```
+python demo.py
+```
+
+4. Open your browser and navigate to `http://localhost:5000`
+
+### Full Version (Requires Anthropic API Key)
+
+For the complete experience with AI-powered instructions:
+
 1. Clone the repository:
 ```
 git clone https://github.com/yourusername/GuideMind.git

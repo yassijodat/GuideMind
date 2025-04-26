@@ -1,6 +1,23 @@
 # GuideMind Running Instructions
 
-## Quick Setup
+## Quick Start for Demo Version (No API Key Required)
+
+1. **Install dependencies**:
+   ```bash
+   pip install flask
+   ```
+
+2. **Run the demo application**:
+   ```bash
+   python demo.py
+   ```
+
+3. **Access the application**:
+   Open your browser and go to `http://localhost:5000`
+
+The demo version uses mock data and responses to demonstrate the application without requiring an Anthropic API key.
+
+## Full Version Setup (Requires API Key)
 
 1. **Install dependencies**:
    ```bash
@@ -20,6 +37,20 @@
 
 4. **Access the application**:
    Open your browser and go to `http://localhost:5000`
+
+## Troubleshooting API Issues
+
+If you encounter issues with the Anthropic API:
+
+1. Try using a different version of the Anthropic SDK:
+   ```bash
+   pip uninstall -y anthropic
+   pip install anthropic==0.5.0
+   ```
+
+2. Verify your API key is correct and has sufficient permissions
+
+3. If all else fails, use the demo version for testing and presentation purposes
 
 ## Usage Tips
 
