@@ -1,0 +1,7 @@
+For your hackathon:
+
+1. Take a screenshot from your HeyGen or D-ID avatar video
+2. Save it as "avatar-poster.jpg" in this directory
+3. This will be used as the initial image shown before the avatar video plays
+
+If you don't have time to create this file, the application will still work without it, but may show a blank space initially.

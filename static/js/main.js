@@ -269,14 +269,60 @@ $(document).ready(function() {
             recognition.start();
             isListening = true;
             $(this).addClass('listening').html('<i class="fas fa-microphone"></i> Listening...');
-            $('#avatar-img').addClass('listening');
+            
+            // Animate avatar to show listening state
+            try {
+                const videoElement = document.getElementById('avatar-video');
+                const listeningVideoUrl = '/static/video/avatar-listening.mp4';
+                
+                if (videoElement) {
+                    $('#avatar-video-source').attr('src', listeningVideoUrl);
+                    videoElement.load();
+                    videoElement.play().catch(e => console.log('Video play error:', e));
+                }
+            } catch (e) {
+                console.error('Avatar video error:', e);
+                // Fallback to old animation method
+                $('#avatar-img').addClass('listening');
+            }
         } else {
             // Stop listening
             recognition.stop();
             isListening = false;
             $(this).removeClass('listening').html('<i class="fas fa-microphone"></i> Voice Control');
-            $('#avatar-img').removeClass('listening');
+            
+            // Return to idle state
+            try {
+                const videoElement = document.getElementById('avatar-video');
+                const idleVideoUrl = '/static/video/avatar-idle.mp4';
+                
+                if (videoElement) {
+                    $('#avatar-video-source').attr('src', idleVideoUrl);
+                    videoElement.load();
+                    videoElement.play().catch(e => console.log('Video play error:', e));
+                }
+            } catch (e) {
+                console.error('Avatar video error:', e);
+                // Fallback
+                $('#avatar-img').removeClass('listening');
+            }
         }
+    });
+    
+    // Handle avatar source selection
+    $('.dropdown-item').on('click', function(e) {
+        e.preventDefault();
+        const source = $(this).data('source');
+        
+        // Update active state
+        $('.dropdown-item').removeClass('active');
+        $(this).addClass('active');
+        
+        // Update button text to show selected source
+        $('#avatar-source').html(`<i class="fas fa-user-circle"></i> ${$(this).text()}`);
+        
+        // For actual implementation this would switch avatar sources
+        console.log(`Switched to ${source} avatar`);
     });
     
     // Text-to-speech function
@@ -313,18 +359,72 @@ $(document).ready(function() {
         
         // Show speaking indicator and animate avatar
         $('.speaking-indicator').removeClass('d-none');
-        $('#avatar-img').addClass('talking');
+        
+        // Switch avatar video to speaking version
+        try {
+            const videoElement = document.getElementById('avatar-video');
+            
+            // For hackathon demo purposes, this would be replaced with actual avatar video URLs
+            // In production, this would dynamically load different avatar videos based on step content
+            
+            const speakingVideoUrl = '/static/video/avatar-speaking.mp4';
+            const idleVideoUrl = '/static/video/avatar-idle.mp4';
+            
+            // Store the current source to go back to it when done
+            const currentSrc = $('#avatar-video-source').attr('src');
+            
+            // If we have a speaking video, use it
+            if (videoElement) {
+                $('#avatar-video-source').attr('src', speakingVideoUrl);
+                videoElement.load();
+                videoElement.play().catch(e => console.log('Video play error:', e));
+            }
+        } catch (e) {
+            console.error('Avatar video error:', e);
+            // Fallback to old animation method
+            $('#avatar-img').addClass('talking');
+        }
         
         // Event handlers
         utterance.onend = function() {
             $('.speaking-indicator').addClass('d-none');
-            $('#avatar-img').removeClass('talking');
+            
+            // Switch back to idle video
+            try {
+                const videoElement = document.getElementById('avatar-video');
+                const idleVideoUrl = '/static/video/avatar-idle.mp4';
+                
+                if (videoElement) {
+                    $('#avatar-video-source').attr('src', idleVideoUrl);
+                    videoElement.load();
+                    videoElement.play().catch(e => console.log('Video play error:', e));
+                }
+            } catch (e) {
+                console.error('Avatar video error:', e);
+                // Fallback
+                $('#avatar-img').removeClass('talking');
+            }
+            
             currentAudio = null;
         };
         
         utterance.onerror = function() {
             $('.speaking-indicator').addClass('d-none');
-            $('#avatar-img').removeClass('talking');
+            // Switch back to idle video
+            try {
+                const videoElement = document.getElementById('avatar-video');
+                const idleVideoUrl = '/static/video/avatar-idle.mp4';
+                
+                if (videoElement) {
+                    $('#avatar-video-source').attr('src', idleVideoUrl);
+                    videoElement.load();
+                    videoElement.play().catch(e => console.log('Video play error:', e));
+                }
+            } catch (e) {
+                console.error('Avatar video error:', e);
+                // Fallback
+                $('#avatar-img').removeClass('talking');
+            }
             currentAudio = null;
             console.error('Speech synthesis error');
         };

@@ -23,6 +23,25 @@ header h1 {
     font-weight: 700;
 }
 
+.avatar-video-container {
+    width: 320px;
+    height: 240px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+    border: 3px solid #3498db;
+    border-radius: 8px;
+    background-color: #f0f8ff;
+}
+
+#avatar-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background-color: #f0f8ff;
+}
+
+/* For backward compatibility */
 .avatar-placeholder {
     width: 200px;
     height: 200px;
@@ -31,12 +50,14 @@ header h1 {
     position: relative;
     overflow: hidden;
     border: 3px solid #3498db;
+    display: none;
 }
 
 .avatar-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    display: none;
 }
 
 .speaking-indicator {

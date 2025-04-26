@@ -1,0 +1,14 @@
+For your hackathon:
+
+1. Download a HeyGen/D-ID avatar video clip for:
+   - Idle state (looking at camera, slight movements)
+   - Speaking state (talking to camera)
+
+2. Place them in the static/video directory as:
+   - avatar-idle.mp4
+   - avatar-speaking.mp4
+
+3. Take a screenshot from one of these videos and save it in static/img as:
+   - avatar-poster.jpg
+
+This will make your avatar look professional during your hackathon presentation.

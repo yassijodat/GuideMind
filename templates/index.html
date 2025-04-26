@@ -49,15 +49,29 @@
             <div class="row">
                 <div class="col-md-6">
                     <div id="avatar-container" class="text-center mb-3">
-                        <!-- Avatar with animation -->
-                        <div class="avatar-placeholder">
-                            <img src="https://i.imgur.com/BnWxjbv.png" alt="Guide Avatar" class="avatar-image" id="avatar-img">
+                        <!-- HeyGen/D-ID Avatar Video Player -->
+                        <div class="avatar-video-container">
+                            <video id="avatar-video" width="320" height="240" poster="{{ url_for('static', filename='img/avatar-poster.jpg') }}">
+                                <source src="{{ url_for('static', filename='video/avatar-idle.mp4') }}" type="video/mp4" id="avatar-video-source">
+                                Your browser does not support the video tag.
+                            </video>
                             <div class="speaking-indicator d-none">Speaking...</div>
                         </div>
-                        <div class="voice-control mt-2">
-                            <button id="voice-indicator" class="btn btn-outline-primary btn-sm">
-                                <i class="fas fa-microphone"></i> Voice Control
-                            </button>
+                        <div class="avatar-controls mt-2 d-flex justify-content-center">
+                            <div class="btn-group">
+                                <button id="voice-indicator" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-microphone"></i> Voice Control
+                                </button>
+                                <button id="avatar-source" class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="fas fa-user-circle"></i> Avatar Source
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item active" href="#" data-source="heygen">HeyGen Avatar</a></li>
+                                    <li><a class="dropdown-item" href="#" data-source="did">D-ID Avatar</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" data-source="static">Static Image</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                     <div id="step-progress" class="progress mb-3" style="height: 30px;">
