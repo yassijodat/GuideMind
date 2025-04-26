@@ -76,14 +76,26 @@ $(document).ready(function() {
     
     // Handle preloaded instruction selection
     $('#preloaded-crane').on('click', function() {
+        console.log('Loading preloaded crane instructions');
+        
+        // Create a FormData object to ensure content type is set correctly
+        const formData = new FormData();
+        formData.append('preloaded_key', 'basic_crane');
+        
         $.ajax({
             url: '/load-instructions',
             type: 'POST',
-            data: {
-                preloaded_key: 'basic_crane'
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(data) {
+                console.log('Preloaded instructions response:', data);
+                handleInstructionsLoaded(data);
             },
-            success: handleInstructionsLoaded,
-            error: function() {
+            error: function(xhr, status, error) {
+                console.error('Error loading instructions:', error);
+                console.error('Status:', status);
+                console.error('Response:', xhr.responseText);
                 alert('Error loading instructions. Please try again.');
             }
         });

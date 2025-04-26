@@ -135,23 +135,28 @@ def index():
 
 @app.route('/load-instructions', methods=['POST'])
 def load_instructions():
-    if 'manual' in request.files:
-        file = request.files['manual']
-        # Process uploaded file
-        manual_text = file.read().decode('utf-8')
-        success = guide.parse_instructions(manual_text=manual_text)
-    else:
-        # Use preloaded instructions
-        preloaded_key = request.form.get('preloaded_key', 'basic_crane')
-        success = guide.parse_instructions(preloaded_key=preloaded_key)
-    
-    if success:
-        return jsonify({
-            'success': True,
-            'total_steps': len(guide.instructions)
-        })
-    else:
-        return jsonify({'success': False, 'error': 'Failed to load instructions'})
+    try:
+        if 'manual' in request.files:
+            file = request.files['manual']
+            # Process uploaded file
+            manual_text = file.read().decode('utf-8')
+            success = guide.parse_instructions(manual_text=manual_text)
+        else:
+            # Use preloaded instructions
+            preloaded_key = request.form.get('preloaded_key', 'basic_crane')
+            print(f"Loading preloaded instructions: {preloaded_key}")
+            success = guide.parse_instructions(preloaded_key=preloaded_key)
+        
+        if success:
+            return jsonify({
+                'success': True,
+                'total_steps': len(guide.instructions)
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Failed to load instructions'})
+    except Exception as e:
+        print(f"Error loading instructions: {e}")
+        return jsonify({'success': False, 'error': f'Error loading instructions: {str(e)}'})
 
 @app.route('/get-step', methods=['GET'])
 def get_step():
