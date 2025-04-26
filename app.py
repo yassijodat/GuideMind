@@ -2,18 +2,23 @@ from flask import Flask, render_template, request, jsonify
 import os
 import json
 from main import GuideMind
-from heygen_controller import heygen_controller
+from sadtalker_controller import sadtalker_controller
 
 app = Flask(__name__)
 guide = GuideMind()
 
-# Initialize HeyGen controller
+# Initialize SadTalker controller
 try:
-    heygen_initialized = heygen_controller.initialize()
-    print(f"HeyGen API initialized: {heygen_initialized}")
+    sadtalker_initialized = sadtalker_controller.is_available()
+    print(f"SadTalker initialized: {sadtalker_initialized}")
+    
+    # Add sample avatars if needed
+    if sadtalker_initialized and not sadtalker_controller.available_avatars:
+        added_avatars = sadtalker_controller.add_sample_avatars()
+        print(f"Added {len(added_avatars)} sample avatars")
 except Exception as e:
-    print(f"Error initializing HeyGen API: {e}")
-    heygen_initialized = False
+    print(f"Error initializing SadTalker: {e}")
+    sadtalker_initialized = False
 
 @app.route('/')
 def index():
@@ -93,34 +98,34 @@ def previous_step():
             'error': 'Already at first step'
         })
 
-# HeyGen API Routes
+# SadTalker API Routes
 
-@app.route('/api/heygen/status', methods=['GET'])
-def heygen_status():
-    """Check if HeyGen API is available and initialized"""
-    global heygen_initialized
+@app.route('/api/avatar/status', methods=['GET'])
+def avatar_status():
+    """Check if SadTalker is available and initialized"""
+    global sadtalker_initialized
     
-    if not heygen_initialized:
+    if not sadtalker_initialized:
         try:
-            heygen_initialized = heygen_controller.initialize()
+            sadtalker_initialized = sadtalker_controller.is_available()
         except Exception as e:
             return jsonify({
                 'status': 'error',
-                'message': f'Error initializing HeyGen API: {str(e)}',
+                'message': f'Error initializing SadTalker: {str(e)}',
                 'initialized': False
             })
     
     return jsonify({
         'status': 'success',
-        'initialized': heygen_initialized,
-        'message': 'HeyGen API initialized successfully' if heygen_initialized else 'HeyGen API not initialized'
+        'initialized': sadtalker_initialized,
+        'message': 'SadTalker initialized successfully' if sadtalker_initialized else 'SadTalker not initialized'
     })
 
-@app.route('/api/heygen/avatars', methods=['GET'])
-def heygen_avatars():
-    """Get available HeyGen avatars"""
+@app.route('/api/avatar/options', methods=['GET'])
+def avatar_options():
+    """Get available avatar options"""
     try:
-        avatars = heygen_controller.get_avatar_options()
+        avatars = sadtalker_controller.get_avatar_options()
         return jsonify({
             'status': 'success',
             'avatars': avatars
@@ -131,24 +136,9 @@ def heygen_avatars():
             'message': f'Error fetching avatars: {str(e)}'
         })
 
-@app.route('/api/heygen/voices', methods=['GET'])
-def heygen_voices():
-    """Get available HeyGen voices"""
-    try:
-        voices = heygen_controller.get_voice_options()
-        return jsonify({
-            'status': 'success',
-            'voices': voices
-        })
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': f'Error fetching voices: {str(e)}'
-        })
-
-@app.route('/api/heygen/set-avatar', methods=['POST'])
-def set_heygen_avatar():
-    """Set HeyGen avatar to use"""
+@app.route('/api/avatar/set', methods=['POST'])
+def set_avatar():
+    """Set avatar to use"""
     try:
         data = request.json
         avatar_id = data.get('avatar_id')
@@ -159,7 +149,7 @@ def set_heygen_avatar():
                 'message': 'No avatar_id provided'
             })
         
-        success = heygen_controller.set_avatar(avatar_id)
+        success = sadtalker_controller.set_avatar(avatar_id)
         return jsonify({
             'status': 'success' if success else 'error',
             'message': 'Avatar set successfully' if success else 'Failed to set avatar'
@@ -170,37 +160,56 @@ def set_heygen_avatar():
             'message': f'Error setting avatar: {str(e)}'
         })
 
-@app.route('/api/heygen/set-voice', methods=['POST'])
-def set_heygen_voice():
-    """Set HeyGen voice to use"""
+@app.route('/api/avatar/upload', methods=['POST'])
+def upload_avatar():
+    """Upload a custom avatar image"""
     try:
-        data = request.json
-        voice_id = data.get('voice_id')
-        
-        if not voice_id:
+        if 'image' not in request.files:
             return jsonify({
                 'status': 'error',
-                'message': 'No voice_id provided'
+                'message': 'No image file provided'
             })
         
-        success = heygen_controller.set_voice(voice_id)
-        return jsonify({
-            'status': 'success' if success else 'error',
-            'message': 'Voice set successfully' if success else 'Failed to set voice'
-        })
+        image_file = request.files['image']
+        if image_file.filename == '':
+            return jsonify({
+                'status': 'error',
+                'message': 'No image file selected'
+            })
+        
+        # Get name from form data or use filename
+        name = request.form.get('name', os.path.splitext(image_file.filename)[0])
+        
+        # Read image data
+        image_data = image_file.read()
+        
+        # Upload avatar
+        avatar = sadtalker_controller.upload_custom_avatar(image_data, name)
+        
+        if avatar:
+            return jsonify({
+                'status': 'success',
+                'avatar': avatar,
+                'message': 'Avatar uploaded successfully'
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to upload avatar'
+            })
     except Exception as e:
         return jsonify({
             'status': 'error',
-            'message': f'Error setting voice: {str(e)}'
+            'message': f'Error uploading avatar: {str(e)}'
         })
 
-@app.route('/api/heygen/welcome-video', methods=['GET'])
+@app.route('/api/avatar/welcome-video', methods=['GET'])
 def get_welcome_video():
-    """Get welcome video from HeyGen"""
+    """Get welcome video"""
     force_regenerate = request.args.get('force', 'false').lower() == 'true'
     
     try:
-        result = heygen_controller.get_welcome_video(force_regenerate=force_regenerate)
+        result = sadtalker_controller.get_welcome_video(force_regenerate=force_regenerate)
         return jsonify(result)
     except Exception as e:
         return jsonify({
@@ -208,9 +217,9 @@ def get_welcome_video():
             'message': f'Error generating welcome video: {str(e)}'
         })
 
-@app.route('/api/heygen/step-video/<int:step_number>', methods=['GET'])
+@app.route('/api/avatar/step-video/<int:step_number>', methods=['GET'])
 def get_step_video(step_number):
-    """Get video for a specific step from HeyGen"""
+    """Get video for a specific step"""
     force_regenerate = request.args.get('force', 'false').lower() == 'true'
     
     try:
@@ -222,7 +231,7 @@ def get_step_video(step_number):
                 'message': f'Invalid step number: {step_number}'
             })
         
-        result = heygen_controller.get_video_for_step(
+        result = sadtalker_controller.get_video_for_step(
             step_text=current_step, 
             step_number=step_number,
             force_regenerate=force_regenerate
@@ -234,9 +243,9 @@ def get_step_video(step_number):
             'message': f'Error generating step video: {str(e)}'
         })
 
-@app.route('/api/heygen/help-video', methods=['POST'])
+@app.route('/api/avatar/help-video', methods=['POST'])
 def get_help_video():
-    """Get help video from HeyGen for when user is stuck"""
+    """Get help video for when user is stuck"""
     force_regenerate = request.args.get('force', 'false').lower() == 'true'
     
     try:
@@ -252,7 +261,7 @@ def get_help_video():
                 })
             step_text = current_step
         
-        result = heygen_controller.get_help_video(
+        result = sadtalker_controller.get_help_video(
             step_text=step_text,
             force_regenerate=force_regenerate
         )

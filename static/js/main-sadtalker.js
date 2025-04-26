@@ -38,13 +38,13 @@ $(document).ready(function() {
         
         recognition.onend = function() {
             isListening = false;
-            $('#voice-indicator').removeClass('listening').text('Voice Control');
+            $('#voice-indicator').removeClass('listening').html('<i class="fas fa-microphone"></i> Voice Control');
         };
         
         recognition.onerror = function(event) {
             console.error('Speech recognition error', event.error);
             isListening = false;
-            $('#voice-indicator').removeClass('listening').text('Voice Control');
+            $('#voice-indicator').removeClass('listening').html('<i class="fas fa-microphone"></i> Voice Control');
         };
     }
     
@@ -99,16 +99,16 @@ $(document).ready(function() {
             $('#setup-container').hide();
             $('#guide-container').show();
             
-            // Try to show welcome video with HeyGen if available
+            // Try to show welcome video with avatar system if available
             let showingWelcome = false;
             
-            if (typeof heygenManager !== 'undefined' && await heygenManager.initialize()) {
+            if (typeof avatarManager !== 'undefined' && await avatarManager.initialize()) {
                 try {
                     // Show loading indicator
                     $('.speaking-indicator').removeClass('d-none').text('Generating welcome...');
                     
                     // Get welcome video
-                    const welcomeVideoUrl = await heygenManager.getWelcomeVideo();
+                    const welcomeVideoUrl = await avatarManager.getWelcomeVideo();
                     
                     if (welcomeVideoUrl) {
                         // Update the video source
@@ -199,26 +199,26 @@ $(document).ready(function() {
                                     videoElement.src = videoUrl;
                                     videoElement.load();
                                     videoElement.play().catch(e => {
-                                        console.error('Error playing HeyGen video:', e);
+                                        console.error('Error playing avatar video:', e);
                                         
                                         // Fallback to regular speech
                                         speakText(data.explanation);
                                     });
                                     
-                                    // Mark as using HeyGen
-                                    usingHeyGen = true;
+                                    // Mark as using avatar video
+                                    usingAvatarVideo = true;
                                     
                                     // Show the speaking indicator
                                     $('.speaking-indicator').text('Speaking...').removeClass('d-none');
                                 }
                             }
                         } catch (error) {
-                            console.error('Error using HeyGen for step explanation:', error);
+                            console.error('Error using avatar for step explanation:', error);
                         }
                     }
                     
-                    // If not using HeyGen, use regular speech synthesis
-                    if (!usingHeyGen) {
+                    // If not using avatar video, use regular speech synthesis
+                    if (!usingAvatarVideo) {
                         speakText(data.explanation);
                     }
                     
@@ -307,10 +307,10 @@ $(document).ready(function() {
                     $('#troubleshooting-content').html(data.troubleshooting);
                     $('#troubleshooting-container').show();
                     
-                    // Try to use HeyGen if available
-                    let usingHeyGen = false;
+                    // Try to use avatar system if available
+                    let usingAvatarVideo = false;
                     
-                    if (typeof heygenManager !== 'undefined' && await heygenManager.initialize()) {
+                    if (typeof avatarManager !== 'undefined' && await avatarManager.initialize()) {
                         try {
                             // Show loading indicator
                             $('.speaking-indicator').removeClass('d-none').text('Generating help...');
@@ -319,7 +319,7 @@ $(document).ready(function() {
                             const currentStepText = $('#step-instruction').text();
                             
                             // Get help video
-                            const videoUrl = await heygenManager.getHelpVideo(currentStepText);
+                            const videoUrl = await avatarManager.getHelpVideo(currentStepText);
                             
                             if (videoUrl) {
                                 // Update the video source
@@ -334,26 +334,26 @@ $(document).ready(function() {
                                     videoElement.src = videoUrl;
                                     videoElement.load();
                                     videoElement.play().catch(e => {
-                                        console.error('Error playing HeyGen video:', e);
+                                        console.error('Error playing avatar video:', e);
                                         
                                         // Fallback to regular speech
                                         speakText(data.troubleshooting);
                                     });
                                     
-                                    // Mark as using HeyGen
-                                    usingHeyGen = true;
+                                    // Mark as using avatar video
+                                    usingAvatarVideo = true;
                                     
                                     // Show the speaking indicator
                                     $('.speaking-indicator').text('Speaking...').removeClass('d-none');
                                 }
                             }
                         } catch (error) {
-                            console.error('Error using HeyGen for troubleshooting:', error);
+                            console.error('Error using avatar for troubleshooting:', error);
                         }
                     }
                     
-                    // If not using HeyGen, use regular speech synthesis
-                    if (!usingHeyGen) {
+                    // If not using avatar video, use regular speech synthesis
+                    if (!usingAvatarVideo) {
                         speakText(data.troubleshooting);
                     }
                 } else {
@@ -407,60 +407,12 @@ $(document).ready(function() {
             recognition.start();
             isListening = true;
             $(this).addClass('listening').html('<i class="fas fa-microphone"></i> Listening...');
-            
-            // Animate avatar to show listening state
-            try {
-                const videoElement = document.getElementById('avatar-video');
-                const listeningVideoUrl = '/static/video/avatar-listening.mp4';
-                
-                if (videoElement) {
-                    $('#avatar-video-source').attr('src', listeningVideoUrl);
-                    videoElement.load();
-                    videoElement.play().catch(e => console.log('Video play error:', e));
-                }
-            } catch (e) {
-                console.error('Avatar video error:', e);
-                // Fallback to old animation method
-                $('#avatar-img').addClass('listening');
-            }
         } else {
             // Stop listening
             recognition.stop();
             isListening = false;
             $(this).removeClass('listening').html('<i class="fas fa-microphone"></i> Voice Control');
-            
-            // Return to idle state
-            try {
-                const videoElement = document.getElementById('avatar-video');
-                const idleVideoUrl = '/static/video/avatar-idle.mp4';
-                
-                if (videoElement) {
-                    $('#avatar-video-source').attr('src', idleVideoUrl);
-                    videoElement.load();
-                    videoElement.play().catch(e => console.log('Video play error:', e));
-                }
-            } catch (e) {
-                console.error('Avatar video error:', e);
-                // Fallback
-                $('#avatar-img').removeClass('listening');
-            }
         }
-    });
-    
-    // Handle avatar source selection
-    $('.dropdown-item').on('click', function(e) {
-        e.preventDefault();
-        const source = $(this).data('source');
-        
-        // Update active state
-        $('.dropdown-item').removeClass('active');
-        $(this).addClass('active');
-        
-        // Update button text to show selected source
-        $('#avatar-source').html(`<i class="fas fa-user-circle"></i> ${$(this).text()}`);
-        
-        // For actual implementation this would switch avatar sources
-        console.log(`Switched to ${source} avatar`);
     });
     
     // Text-to-speech function
@@ -495,74 +447,17 @@ $(document).ready(function() {
             utterance.voice = preferredVoice;
         }
         
-        // Show speaking indicator and animate avatar
-        $('.speaking-indicator').removeClass('d-none');
-        
-        // Switch avatar video to speaking version
-        try {
-            const videoElement = document.getElementById('avatar-video');
-            
-            // For hackathon demo purposes, this would be replaced with actual avatar video URLs
-            // In production, this would dynamically load different avatar videos based on step content
-            
-            const speakingVideoUrl = '/static/video/avatar-speaking.mp4';
-            const idleVideoUrl = '/static/video/avatar-idle.mp4';
-            
-            // Store the current source to go back to it when done
-            const currentSrc = $('#avatar-video-source').attr('src');
-            
-            // If we have a speaking video, use it
-            if (videoElement) {
-                $('#avatar-video-source').attr('src', speakingVideoUrl);
-                videoElement.load();
-                videoElement.play().catch(e => console.log('Video play error:', e));
-            }
-        } catch (e) {
-            console.error('Avatar video error:', e);
-            // Fallback to old animation method
-            $('#avatar-img').addClass('talking');
-        }
+        // Show speaking indicator
+        $('.speaking-indicator').removeClass('d-none').text('Speaking...');
         
         // Event handlers
         utterance.onend = function() {
             $('.speaking-indicator').addClass('d-none');
-            
-            // Switch back to idle video
-            try {
-                const videoElement = document.getElementById('avatar-video');
-                const idleVideoUrl = '/static/video/avatar-idle.mp4';
-                
-                if (videoElement) {
-                    $('#avatar-video-source').attr('src', idleVideoUrl);
-                    videoElement.load();
-                    videoElement.play().catch(e => console.log('Video play error:', e));
-                }
-            } catch (e) {
-                console.error('Avatar video error:', e);
-                // Fallback
-                $('#avatar-img').removeClass('talking');
-            }
-            
             currentAudio = null;
         };
         
         utterance.onerror = function() {
             $('.speaking-indicator').addClass('d-none');
-            // Switch back to idle video
-            try {
-                const videoElement = document.getElementById('avatar-video');
-                const idleVideoUrl = '/static/video/avatar-idle.mp4';
-                
-                if (videoElement) {
-                    $('#avatar-video-source').attr('src', idleVideoUrl);
-                    videoElement.load();
-                    videoElement.play().catch(e => console.log('Video play error:', e));
-                }
-            } catch (e) {
-                console.error('Avatar video error:', e);
-                // Fallback
-                $('#avatar-img').removeClass('talking');
-            }
             currentAudio = null;
             console.error('Speech synthesis error');
         };

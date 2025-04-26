@@ -17,7 +17,8 @@
                 </div>
                 <div class="mb-3">
                     <label for="progress-image" class="form-label">Upload a photo:</label>
-                    <input type="file" class="form-control" id="progress-image" accept="image/*">
+                    <input type="file" class="form-control" id="progress-image" accept="image/*" capture="environment">
+                    <small class="form-text text-muted">Take a photo of your current progress</small>
                     <div class="mt-2">
                         <img id="image-preview" style="max-width: 100%; max-height: 200px; display: none;" class="rounded">
                     </div>
@@ -44,3 +45,6 @@
         <button id="close-troubleshooting" class="btn btn-sm btn-secondary">Close</button>
     </div>
 </div>
+
+<!-- Load the troubleshooting JavaScript -->
+<script src="{{ url_for('static', filename='js/troubleshoot.js') }}"></script>

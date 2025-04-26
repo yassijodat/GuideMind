@@ -65,7 +65,7 @@
                                 <button id="avatar-settings" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#avatarSettingsModal">
                                     <i class="fas fa-cog"></i> Avatar Settings
                                 </button>
-                                <span id="heygen-status" class="ms-2 badge bg-secondary">HeyGen</span>
+                                <span id="avatar-status" class="ms-2 badge bg-secondary">Avatars</span>
                             </div>
                         </div>
                     </div>
@@ -113,7 +113,7 @@
         </div>
     </div>
 
-    <!-- HeyGen Avatar Settings Modal -->
+    <!-- SadTalker Avatar Settings Modal -->
     <div class="modal fade" id="avatarSettingsModal" tabindex="-1" aria-labelledby="avatarSettingsModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -124,15 +124,18 @@
                 <div class="modal-body">
                     <ul class="nav nav-tabs" id="avatarSettingsTabs" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="avatars-tab" data-bs-toggle="tab" data-bs-target="#avatars-content" type="button" role="tab" aria-controls="avatars-content" aria-selected="true">Avatars</button>
+                            <button class="nav-link active" id="avatars-tab" data-bs-toggle="tab" data-bs-target="#avatars-content" type="button" role="tab" aria-controls="avatars-content" aria-selected="true">Choose Avatar</button>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="voices-tab" data-bs-toggle="tab" data-bs-target="#voices-content" type="button" role="tab" aria-controls="voices-content" aria-selected="false">Voices</button>
+                            <button class="nav-link" id="upload-tab" data-bs-toggle="tab" data-bs-target="#upload-content" type="button" role="tab" aria-controls="upload-content" aria-selected="false">Upload Custom</button>
                         </li>
                     </ul>
                     <div class="tab-content mt-3" id="avatarSettingsTabContent">
                         <div class="tab-pane fade show active" id="avatars-content" role="tabpanel" aria-labelledby="avatars-tab">
                             <p>Select an avatar to use for your guide:</p>
+                            <div class="mb-3">
+                                <span id="avatar-status" class="badge bg-secondary">Checking avatars...</span>
+                            </div>
                             <div id="avatar-selector" class="avatar-grid">
                                 <!-- Avatars will be populated here by JavaScript -->
                                 <div class="text-center p-5">
@@ -143,25 +146,32 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="voices-content" role="tabpanel" aria-labelledby="voices-tab">
-                            <p>Select a voice for your guide:</p>
-                            <select id="voice-selector" class="form-select">
-                                <!-- Voices will be populated here by JavaScript -->
-                                <option>Loading voices...</option>
-                            </select>
-                            <div class="mt-3">
-                                <p>Test selected voice:</p>
-                                <div class="input-group">
-                                    <input type="text" id="test-voice-text" class="form-control" placeholder="Enter text to test the voice" value="Hello, I'm your origami guide!">
-                                    <button class="btn btn-primary" id="test-voice-button" type="button">Test Voice</button>
+                        <div class="tab-pane fade" id="upload-content" role="tabpanel" aria-labelledby="upload-tab">
+                            <p>Upload your own avatar image:</p>
+                            <form id="avatar-upload-form" enctype="multipart/form-data">
+                                <div class="mb-3">
+                                    <label for="avatar-name" class="form-label">Avatar Name</label>
+                                    <input type="text" class="form-control" id="avatar-name" name="name" placeholder="My Custom Avatar">
                                 </div>
-                            </div>
+                                <div class="mb-3">
+                                    <label for="avatar-image" class="form-label">Avatar Image</label>
+                                    <input type="file" class="form-control" id="avatar-image" name="image" accept="image/*">
+                                    <div class="form-text">Upload a clear photo of a face (frontal view preferred).</div>
+                                </div>
+                                <div class="mb-3">
+                                    <img id="avatar-preview" src="#" alt="Preview" style="max-width: 200px; max-height: 200px; display: none;" class="img-thumbnail">
+                                </div>
+                                <div id="avatar-upload-status"></div>
+                                <button type="submit" class="btn btn-primary">Upload Avatar</button>
+                            </form>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <div class="text-start me-auto">
+                        <small class="text-muted">Powered by SadTalker</small>
+                    </div>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" id="save-avatar-settings">Save Settings</button>
                 </div>
             </div>
         </div>
@@ -170,7 +180,7 @@
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/heygen.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main-sadtalker.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/sadtalker.js') }}"></script>
 </body>
 </html>
