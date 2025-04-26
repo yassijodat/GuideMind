@@ -6,10 +6,17 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Initialize Anthropic client
-client = anthropic.Anthropic(
-    api_key=os.getenv("CLAUDE_API_KEY")
-)
+# Initialize Anthropic client - updated for compatibility
+try:
+    # For newer versions of the SDK
+    client = anthropic.Anthropic(
+        api_key=os.getenv("CLAUDE_API_KEY")
+    )
+except TypeError:
+    # For older versions of the SDK
+    client = anthropic.Client(
+        api_key=os.getenv("CLAUDE_API_KEY")
+    )
 
 class GuideMind:
     def __init__(self):
@@ -40,25 +47,38 @@ class GuideMind:
             return False
         
         # Use Claude to parse and structure the instructions
-        response = client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=1000,
-            temperature=0,
-            messages=[
-                {"role": "user", "content": f"""
-                Parse these origami instructions into clear, sequential steps.
-                For each step:
-                1. Identify the main action
-                2. Describe it precisely 
-                3. Format as a list of steps
-                
-                Instructions:
-                {instruction_text}
-                """}
-            ]
-        )
+        prompt = f"""
+            Parse these origami instructions into clear, sequential steps.
+            For each step:
+            1. Identify the main action
+            2. Describe it precisely 
+            3. Format as a list of steps
+            
+            Instructions:
+            {instruction_text}
+            """
+            
+        try:
+            # For newer SDK versions
+            response = client.messages.create(
+                model="claude-3-opus-20240229",
+                max_tokens=1000,
+                temperature=0,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            parsed_steps = response.content[0].text
+        except AttributeError:
+            # For older SDK versions
+            response = client.completion(
+                prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
+                model="claude-3-opus-20240229",
+                max_tokens_to_sample=1000,
+                temperature=0
+            )
+            parsed_steps = response.completion
         
-        parsed_steps = response.content[0].text
         self.instructions = [step.strip() for step in parsed_steps.split('\n') if step.strip()]
         self.current_step = 0
         return True
@@ -85,45 +105,69 @@ class GuideMind:
     
     def get_step_explanation(self, step_text):
         """Get detailed explanation for a particular step"""
-        response = client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=500,
-            temperature=0,
-            messages=[
-                {"role": "user", "content": f"""
-                You are an expert origami instructor. Explain this step in detail:
-                
-                Step: {step_text}
-                
-                Provide a clear, detailed explanation that would help a beginner understand exactly what to do.
-                """}
-            ]
-        )
+        prompt = f"""
+        You are an expert origami instructor. Explain this step in detail:
         
-        return response.content[0].text
+        Step: {step_text}
+        
+        Provide a clear, detailed explanation that would help a beginner understand exactly what to do.
+        """
+        
+        try:
+            # For newer SDK versions
+            response = client.messages.create(
+                model="claude-3-opus-20240229",
+                max_tokens=500,
+                temperature=0,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response.content[0].text
+        except AttributeError:
+            # For older SDK versions
+            response = client.completion(
+                prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
+                model="claude-3-opus-20240229",
+                max_tokens_to_sample=500,
+                temperature=0
+            )
+            return response.completion
     
     def get_troubleshooting(self, step_text):
         """Get troubleshooting advice for when user is stuck"""
-        response = client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=500,
-            temperature=0,
-            messages=[
-                {"role": "user", "content": f"""
-                A user is stuck on this origami step:
-                
-                Step: {step_text}
-                
-                Provide troubleshooting advice including:
-                1. Common mistakes at this step
-                2. How to identify if the fold is correct
-                3. Remedial actions (e.g., "try refolding the top corner")
-                4. A simple check to confirm they're back on track
-                """}
-            ]
-        )
+        prompt = f"""
+        A user is stuck on this origami step:
         
-        return response.content[0].text
+        Step: {step_text}
+        
+        Provide troubleshooting advice including:
+        1. Common mistakes at this step
+        2. How to identify if the fold is correct
+        3. Remedial actions (e.g., "try refolding the top corner")
+        4. A simple check to confirm they're back on track
+        """
+        
+        try:
+            # For newer SDK versions
+            response = client.messages.create(
+                model="claude-3-opus-20240229",
+                max_tokens=500,
+                temperature=0,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            return response.content[0].text
+        except AttributeError:
+            # For older SDK versions
+            response = client.completion(
+                prompt=f"\n\nHuman: {prompt}\n\nAssistant:",
+                model="claude-3-opus-20240229",
+                max_tokens_to_sample=500,
+                temperature=0
+            )
+            return response.completion
 
 # Demo usage
 if __name__ == "__main__":
